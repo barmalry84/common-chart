@@ -1,0 +1,24 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-ingress
+  namespace: argocd
+  annotations:
+    external.dns/provider: aws
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: argocd.k8s-obu.eu-west-1.zealtest.zone
+    http:
+      paths:
+      - pathType: ImplementationSpecific
+        path: /
+        backend:
+          service: 
+            name: argocd-server
+            port: 
+              number: 80
+  tls:
+    - hosts:
+      - argocd.k8s-obu.eu-west-1.zealtest.zone

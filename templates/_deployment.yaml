@@ -1,0 +1,143 @@
+{{- define "common-chart.deployment" -}}
+{{- if .Values.deployment }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "libs.names.fullname" . }}
+  namespace: {{ include "libs.names.namespace" . | quote }}
+  labels: {{- include "libs.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
+    app.kubernetes.io/name: {{ include "libs.names.fullname" . }}
+  {{- if or .Values.deployment.annotations .Values.commonAnnotations }}
+  {{- $annotations := include "libs.tplvalues.merge" (dict "values" (list .Values.deployment.annotations .Values.commonAnnotations) "context" .) }}
+  annotations: {{- include "libs.tplvalues.render" ( dict "value" $annotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  {{- if .Values.deployment.updateStrategy }}
+  strategy: {{- toYaml .Values.deployment.updateStrategy | nindent 4 }}
+  {{- end }}
+  {{- $podLabels := include "libs.tplvalues.merge" (dict "values" (list .Values.deployment.podLabels .Values.commonLabels) "context" .) }}
+  selector:
+    matchLabels: {{- include "libs.labels.matchLabels" ( dict "customLabels" $podLabels "context" $ ) | nindent 6 }}
+      app.kubernetes.io/name: {{ include "libs.names.fullname" . }}
+  template:
+    metadata:
+      {{- if .Values.deployment.podAnnotations }}
+      annotations: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
+      labels: {{- include "libs.labels.standard" ( dict "customLabels" $podLabels "context" $ ) | nindent 8 }}
+        app.kubernetes.io/name: {{ include "libs.names.fullname" . }}
+    spec:
+      {{- if .Values.deployment.serviceAccountName }}
+      serviceAccountName: {{ .Values.deployment.serviceAccountName }}
+      {{- end }}
+      {{- if .Values.deployment.hostAliases }}
+      hostAliases: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.hostAliases "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployment.customAffinity }}
+      affinity: {{- include "libs.tplvalues.render" ( dict "value" .Values.deployment.affinity "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployment.affinity }}
+      affinity:
+        podAffinity: {{- include "libs.affinities.pods" (dict "type" .Values.deployment.affinity.podAffinityPreset "component" (include "libs.names.fullname" .) "customLabels" $podLabels "context" $) | nindent 10 }}
+        podAntiAffinity: {{- include "libs.affinities.pods" (dict "type" .Values.deployment.affinity.podAntiAffinityPreset "component" (include "libs.names.fullname" .) "customLabels" $podLabels "context" $) | nindent 10 }}
+        nodeAffinity: {{- include "libs.affinities.nodes" (dict "type" .Values.deployment.affinity.nodeAffinityPreset.type "key" .Values.deployment.affinity.nodeAffinityPreset.key "values" .Values.deployment.affinity.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      {{- if .Values.deployment.nodeSelector }}
+      nodeSelector: {{- include "libs.tplvalues.render" ( dict "value" .Values.deployment.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployment.tolerations }}
+      tolerations: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.tolerations "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployment.priorityClassName }}
+      priorityClassName: {{ .Values.deployment.priorityClassName | quote }}
+      {{- end }}
+      {{- if .Values.deployment.schedulerName }}
+      schedulerName: {{ .Values.deployment.schedulerName | quote }}
+      {{- end }}
+      {{- if .Values.deployment.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.topologySpreadConstraints "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.deployment.podSecurityContext }}
+      securityContext: {{- toYaml .Values.deployment.podSecurityContext | nindent 8  }}
+      {{- end }}
+      {{- if .Values.deployment.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.deployment.terminationGracePeriodSeconds }}
+      {{- end }}
+      containers:
+        - name: {{ include "libs.names.fullname" . }}
+          image: {{ .Values.deployment.image.image }}:{{ .Values.deployment.image.version }}
+          imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
+          {{- if .Values.deployment.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.deployment.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          {{- if .Values.deployment.diagnosticMode }}
+          command: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.diagnosticMode.command "context" $) | nindent 12 }}
+          {{- else if .Values.deployment.command }}
+          command: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.command "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.deployment.diagnosticMode }}
+          args: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.diagnosticMode.args "context" $) | nindent 12 }}
+          {{- else if .Values.deployment.args }}
+          args: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.args "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.deployment.envVars }}
+          env:
+            {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.envVars "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.deployment.extraEnvVars }}
+          envFrom:
+            {{- if .Values.deployment.extraEnvVars.EnvVarsCM }}
+            - configMapRef:
+                name: {{ .Values.deployment.extraEnvVars.EnvVarsCM }}
+            {{- end }}
+            {{- if .Values.deployment.extraEnvVars.envVarsSecret }}
+            - secretRef:
+                name: {{ .Values.deployment.extraEnvVars.envVarsSecret }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.deployment.resources }}
+          resources: {{- toYaml .Values.deployment.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: {{ .Values.deployment.containerPort.name }}
+              containerPort: {{ .Values.deployment.containerPort.port}}
+          {{- if not .Values.deployment.diagnosticMode}}
+          {{- if .Values.deployment.livenessProbe }}
+          livenessProbe: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.livenessProbe "context" $) | nindent 12 }}        
+          {{- end }}
+          {{- if .Values.deployment.readinessProbe }}
+          readinessProbe: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.readinessProbe "context" $) | nindent 12 }}        
+          {{- end }}
+          {{- if .Values.deployment.startupProbe }}
+          startupProbe: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.startupProbe "context" $) | nindent 12 }}        
+          {{- end }}
+          {{- end }}
+          {{- if .Values.deployment.lifecycleHooks }}
+          lifecycle: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.lifecycleHooks "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.deployment.volumeMounts }}
+          volumeMounts:
+          {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.volumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+      {{- if .Values.deployment.initContainers }}
+      initContainers:
+        - name: {{ include "libs.names.fullname" . }}-init
+          image: {{ .Values.deployment.initContainers.image.image }}:{{ .Values.deployment.initContainers.image.version }}
+          imagePullPolicy: {{ .Values.deployment.initContainers.image.pullPolicy }}
+          {{- if .Values.deployment.initContainers.resources }}
+          resources: {{- toYaml .Values.deployment.initContainers.resources | nindent 12 }}
+          {{- end }}
+          {{- if .Values.deployment.initContainers.volumeMounts }}
+          volumeMounts:
+          {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.initContainers.volumeMounts "context" $) | nindent 12 }}
+          {{- end }}
+          command: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.initContainers.command "context" $) | nindent 12 }}
+          args: {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.initContainers.args "context" $) | nindent 12 }}
+      {{- end }} 
+      {{- if .Values.deployment.persistence }}
+      volumes:
+        {{- include "libs.tplvalues.render" (dict "value" .Values.deployment.persistence.volumes "context" $) | nindent 8 }}
+      {{- end }}
+{{- end }}
+{{- end }}

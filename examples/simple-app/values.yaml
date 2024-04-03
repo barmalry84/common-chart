@@ -1,0 +1,44 @@
+deployment:
+  replicaCount: 2
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  image:
+    image: nginx
+    version: latest
+    pullPolicy: Always
+  containerPort:
+    name: http
+    port: 80
+  livenessProbe:
+    initialDelaySeconds: 20
+    timeoutSeconds: 2
+    httpGet:
+      path: /
+      port: 80
+    periodSeconds: 10
+    failureThreshold: 6
+    successThreshold: 1
+  readinessProbe:
+    initialDelaySeconds: 20
+    timeoutSeconds: 2
+    httpGet:
+      path: /
+      port: 80
+    periodSeconds: 10
+    failureThreshold: 6
+    successThreshold: 1
+service:
+  ports:
+    name: http
+    port: 80
+    targetPort: 80
+ingress:
+  annotations:
+    external.dns/provider: aws
+  hostname: simple-app.com
+  path: /
+  pathType: Prefix
+  servicePort: 80
