@@ -35,10 +35,3 @@ service:
     name: http
     port: 80
     targetPort: 80
-ingress:
-  annotations:
-    external.dns/provider: aws
-  hostname: simple-app.k8s-obu.eu-west-1.zealtest.zone
-  path: /
-  pathType: Prefix
-  servicePort: 80
