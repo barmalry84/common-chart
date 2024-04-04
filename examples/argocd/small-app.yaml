@@ -11,22 +11,12 @@ spec:
   project: default
   source:
     helm:
-      parameters:
-      - name: argo-cd.global.domain
-        value: somehting
-      - name: argo-cd.configs.secret.argocdServerAdminPassword
-        value: Hrh5R2zkAr3Skc9Y
       valueFiles:
       - values.yaml
       - values.dev.yaml
     path: examples/simple-app
     repoURL: https://github.com/barmalry84/common-chart.git
     targetRevision: HEAD
-  ignoreDifferences:
-  - group: ""
-    jsonPointers:
-    - /data/admin.passwordMtime
-    kind: Secret
   syncPolicy:
     automated: {}
     syncOptions:
