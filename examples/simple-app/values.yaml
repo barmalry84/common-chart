@@ -7,7 +7,7 @@ deployment:
       maxUnavailable: 1
   image:
     image: nginx
-    version: latest
+    version: latestie
     pullPolicy: Always
   containerPort:
     name: http
@@ -42,4 +42,3 @@ ingress:
   path: /
   pathType: Prefix
   servicePort: 80
-  
