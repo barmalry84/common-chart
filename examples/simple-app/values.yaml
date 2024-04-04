@@ -7,7 +7,7 @@ deployment:
       maxUnavailable: 1
   image:
     image: nginx
-    version: latest
+    version: 1.24.0
     pullPolicy: Always
   containerPort:
     name: http
@@ -38,7 +38,7 @@ service:
 ingress:
   annotations:
     external.dns/provider: aws
-  hostname: small-app.k8s-obu.eu-west-1.zealtest.zone
+  hostname: simple-app.k8s-obu.eu-west-1.zealtest.zone
   path: /
   pathType: Prefix
   servicePort: 80
