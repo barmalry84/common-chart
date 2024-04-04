@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   generation: 1
-  name: simple-app
+  name: small-app
   namespace: argocd
 spec:
   destination:
@@ -18,6 +18,7 @@ spec:
         value: Hrh5R2zkAr3Skc9Y
       valueFiles:
       - values.yaml
+      - values.dev.yaml
     path: examples/simple-app
     repoURL: https://github.com/barmalry84/common-chart.git
     targetRevision: HEAD
