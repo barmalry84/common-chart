@@ -7,7 +7,7 @@ deployment:
       maxUnavailable: 1
   image:
     image: nginx
-    version: latestie
+    version: latest
     pullPolicy: Always
   containerPort:
     name: http

@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: argocd.k8s-obu.eu-west-1.zealtest.zone
+  - host: argo-cd.k8s-obu.eu-west-1.zealtest.zone
     http:
       paths:
       - pathType: ImplementationSpecific
@@ -21,4 +21,4 @@ spec:
               number: 80
   tls:
     - hosts:
-      - argocd.k8s-obu.eu-west-1.zealtest.zone
+      - argo-cd.k8s-obu.eu-west-1.zealtest.zone
