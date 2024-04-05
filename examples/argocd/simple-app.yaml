@@ -16,7 +16,7 @@ spec:
       - values.dev.yaml
     path: examples/simple-app
     repoURL: https://github.com/barmalry84/common-chart.git
-    targetRevision: 1.0.0
+    targetRevision: 0.0.1
   syncPolicy:
     automated: {}
     syncOptions:
